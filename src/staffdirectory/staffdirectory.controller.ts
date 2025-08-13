@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { StaffdirectoryService } from './staffdirectory.service';
 import { CreateStaffdirectoryDto } from './dto/create-staffdirectory.dto';
@@ -23,7 +24,28 @@ export class StaffdirectoryController {
   findAll() {
     return this.staffdirectoryService.findAll();
   }
+  @Get('all')
+  async getAll(
+    @Query('department') department?: string,
+    @Query('unit') unit?: string,
+  ) {
+    return this.staffdirectoryService.findAllData({ department, unit });
+  }
 
+  // Endpoint 2: With pagination
+  @Get('paginated')
+  async getAllPaginated(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+    @Query('department') department?: string,
+    @Query('unit') unit?: string,
+  ) {
+    return this.staffdirectoryService.findAllPaginated(
+      { department, unit },
+      Number(page),
+      Number(limit),
+    );
+  }
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.staffdirectoryService.findOne(id);

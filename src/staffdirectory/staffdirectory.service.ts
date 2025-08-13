@@ -102,4 +102,38 @@ export class StaffdirectoryService {
       message: 'Form deleted successfully',
     };
   }
+
+  async findAllData(filters: { department?: string; unit?: string }) {
+    const query: any = {};
+    if (filters.department) query.department = filters.department;
+    if (filters.unit) query.unit = filters.unit;
+
+    return this.StaffdirectoryModel.find(query).exec();
+  }
+
+  // With pagination
+  async findAllPaginated(
+    filters: { department?: string; unit?: string },
+    page: number = 1,
+    limit: number = 10,
+  ) {
+    const query: any = {};
+    if (filters.department) query.department = filters.department;
+    if (filters.unit) query.unit = filters.unit;
+
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await Promise.all([
+      this.StaffdirectoryModel.find(query).skip(skip).limit(limit).exec(),
+      this.StaffdirectoryModel.countDocuments(query),
+    ]);
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
 }
