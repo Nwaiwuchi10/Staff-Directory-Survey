@@ -19,50 +19,50 @@ export class StaffdirectoryService {
     return 'This action adds a new staffdirectory';
   }
   async createForm(dto: CreateStaffdirectoryDto): Promise<Staffdirectory> {
+    const { email } = dto;
+    const requiredFields = [
+      'fullName',
+      'email',
+      'phoneNumber',
+      'whatsappNumber',
+      'unit',
+      'department',
+    ];
+
+    for (const field of requiredFields) {
+      if (!dto[field] || String(dto[field]).trim() === '') {
+        throw new BadRequestException(`${field} is required`);
+      }
+    }
+
+    const existing = await this.StaffdirectoryModel.findOne({
+      email,
+    });
+    if (existing) {
+      throw new BadRequestException('Email already exists');
+    }
+    const textFields = [
+      'interests',
+      'aboutYou',
+      'superPower',
+      'presidentPlans',
+    ];
+    for (const field of textFields) {
+      if (dto[field]) {
+        const length = dto[field].trim().length;
+        if (length < 5) {
+          throw new BadRequestException(
+            `${field} input field must be at least 5 characters long`,
+          );
+        }
+        if (length > 1000) {
+          throw new BadRequestException(
+            `${field} must not exceed 1000 characters`,
+          );
+        }
+      }
+    }
     try {
-      const requiredFields = [
-        'fullName',
-        'email',
-        'phoneNumber',
-        'whatsappNumber',
-        'unit',
-        'department',
-      ];
-
-      for (const field of requiredFields) {
-        if (!dto[field] || String(dto[field]).trim() === '') {
-          throw new BadRequestException(`${field} is required`);
-        }
-      }
-      const textFields = [
-        'interests',
-        'aboutYou',
-        'superPower',
-        'presidentPlans',
-      ];
-      for (const field of textFields) {
-        if (dto[field]) {
-          const length = dto[field].trim().length;
-          if (length < 5) {
-            throw new BadRequestException(
-              `${field} must be at least 5 characters long`,
-            );
-          }
-          if (length > 1000) {
-            throw new BadRequestException(
-              `${field} must not exceed 1000 characters`,
-            );
-          }
-        }
-      }
-
-      const existing = await this.StaffdirectoryModel.findOne({
-        email: dto.email,
-      });
-      if (existing) {
-        throw new BadRequestException('Email already exists');
-      }
-
       const createdStaff = new this.StaffdirectoryModel(dto);
       const result = createdStaff.save();
       return result;
@@ -108,7 +108,7 @@ export class StaffdirectoryService {
     if (filters.department) query.department = filters.department;
     if (filters.unit) query.unit = filters.unit;
 
-    return this.StaffdirectoryModel.find(query).exec();
+    return this.StaffdirectoryModel.find(query).sort({ createdAt: -1 }).exec();
   }
 
   // With pagination
@@ -124,7 +124,11 @@ export class StaffdirectoryService {
     const skip = (page - 1) * limit;
 
     const [data, total] = await Promise.all([
-      this.StaffdirectoryModel.find(query).skip(skip).limit(limit).exec(),
+      this.StaffdirectoryModel.find(query)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .exec(),
       this.StaffdirectoryModel.countDocuments(query),
     ]);
 

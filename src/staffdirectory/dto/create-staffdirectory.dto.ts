@@ -23,7 +23,7 @@ export class CreateStaffdirectoryDto {
   @IsNotEmpty()
   phoneNumber: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsString()
   whatsappNumber: string;
 

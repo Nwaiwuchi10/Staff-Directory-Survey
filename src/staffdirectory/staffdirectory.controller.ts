@@ -20,11 +20,11 @@ export class StaffdirectoryController {
   async createForm(@Body() dto: CreateStaffdirectoryDto) {
     return this.staffdirectoryService.createForm(dto);
   }
-  @Get()
+  @Get('all')
   findAll() {
     return this.staffdirectoryService.findAll();
   }
-  @Get('all')
+  @Get()
   async getAll(
     @Query('department') department?: string,
     @Query('unit') unit?: string,
